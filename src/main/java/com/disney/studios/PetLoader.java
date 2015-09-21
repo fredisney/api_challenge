@@ -20,7 +20,6 @@ import java.io.InputStreamReader;
 @Component
 public class PetLoader implements InitializingBean {
     // Resources to the different files we need to load.
-
     @Value("classpath:data/labrador.txt")
     private Resource labradors;
 
@@ -36,15 +35,28 @@ public class PetLoader implements InitializingBean {
     @Autowired
     DataSource dataSource;
 
+    /**
+     * Load the different breeds into the data source after
+     * the application is ready.
+     *
+     * @throws Exception In case something goes wrong while we load the breeds.
+     */
     @Override
     public void afterPropertiesSet() throws Exception {
-        loadCategory("Labrador", labradors);
-        loadCategory("Pug", pugs);
-        loadCategory("Retriever", retrievers);
-        loadCategory("Yorkie", yorkies);
+        loadBreed("Labrador", labradors);
+        loadBreed("Pug", pugs);
+        loadBreed("Retriever", retrievers);
+        loadBreed("Yorkie", yorkies);
     }
 
-    private void loadCategory(String category, Resource source) throws IOException {
+    /**
+     * Reads the list of dogs in a category and (eventually) add
+     * them to the data source.
+     * @param breed The breed that we are loading.
+     * @param source The file holding the breeds.
+     * @throws IOException In case things go horribly, horribly wrong.
+     */
+    private void loadBreed(String breed, Resource source) throws IOException {
         try ( BufferedReader br = new BufferedReader(new InputStreamReader(source.getInputStream()))) {
             String line;
             while ((line = br.readLine()) != null) {
