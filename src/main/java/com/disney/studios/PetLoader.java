@@ -1,5 +1,8 @@
 package com.disney.studios;
 
+import com.disney.studios.model.Breed;
+import com.disney.studios.model.Dog;
+import com.disney.studios.repository.BreedRepository;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +13,8 @@ import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Loads stored objects from the file system and builds up
@@ -21,19 +26,23 @@ import java.io.InputStreamReader;
 public class PetLoader implements InitializingBean {
     // Resources to the different files we need to load.
     @Value("classpath:data/labrador.txt")
-    private Resource labradors;
+    public Resource labradors;
 
     @Value("classpath:data/pug.txt")
-    private Resource pugs;
+    public Resource pugs;
 
     @Value("classpath:data/retriever.txt")
-    private Resource retrievers;
+    public Resource retrievers;
 
     @Value("classpath:data/yorkie.txt")
-    private Resource yorkies;
+    public Resource yorkies;
 
     @Autowired
+    public
     DataSource dataSource;
+
+    @Autowired
+    public BreedRepository breedRepository;
 
     /**
      * Load the different breeds into the data source after
@@ -57,6 +66,10 @@ public class PetLoader implements InitializingBean {
      * @throws IOException In case things go horribly, horribly wrong.
      */
     private void loadBreed(String breed, Resource source) throws IOException {
+        Breed _breed= new Breed();
+        _breed.setName(breed);
+        List<Dog> dogs = new ArrayList<>();
+
         try ( BufferedReader br = new BufferedReader(new InputStreamReader(source.getInputStream()))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -64,7 +77,14 @@ public class PetLoader implements InitializingBean {
                 /* TODO: Create appropriate objects and save them to
                  *       the datasource.
                  */
+                Dog dog = new Dog();
+                dog.setBreed(_breed);
+                dog.setFavorites(0);
+                dog.setImageUrl(line);
+                dogs.add(dog);
             }
+            _breed.setDogs(dogs);
+            breedRepository.save(_breed);
         }
     }
 }
